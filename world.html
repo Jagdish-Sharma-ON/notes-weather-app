@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - World Weather</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        nav a:hover::after {
+            width: 80%;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .search-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            min-width: 450px;
+            max-width: 650px;
+            animation: fadeIn 0.6s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .country-select-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid #f5576c;
+            border-radius: 15px;
+            font-size: 1rem;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        select:focus {
+            border-color: #f093fb;
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+            transform: translateY(-2px);
+        }
+
+        select:hover {
+            border-color: #f093fb;
+        }
+
+        .city-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 1.2rem;
+            border: 2px solid #f5576c;
+            border-radius: 15px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        input:focus {
+            border-color: #f093fb;
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button {
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .capital-btn {
+            width: 100%;
+            margin-top: 1rem;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .capital-btn:hover {
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            min-width: 450px;
+            max-width: 550px;
+            display: none;
+            animation: fadeIn 0.6s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .weather-card.show {
+            display: block;
+        }
+
+        .location {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .temperature {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+            animation: pulse 2s ease infinite;
+        }
+
+        .weather-desc {
+            font-size: 1.4rem;
+            color: #555;
+            text-transform: capitalize;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .detail-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.2rem;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(245, 87, 108, 0.1);
+        }
+
+        .detail-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.2);
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .weather-icon {
+            font-size: 6rem;
+            margin: 1rem 0;
+            animation: bounce 2s ease infinite;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+        }
+
+        .info-text {
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 0.7rem;
+            font-style: italic;
+        }
+
+        .timestamp {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(245, 87, 108, 0.3);
+            border-radius: 50%;
+            border-top-color: #f5576c;
+            animation: rotate 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 600px) {
+            .search-card, .weather-card {
+                min-width: 90%;
+                padding: 2rem;
+            }
+
+            .temperature {
+                font-size: 4rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="search.html">Search India</a></li>
+            <li><a href="world.html">World Weather</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="search-card">
+            <h1>🌍 World Weather</h1>
+            
+            <div class="country-select-wrapper">
+                <select id="countrySelect">
+                    <option value="">Select a country...</option>
+                    <option value="US">United States</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="FR">France</option>
+                    <option value="DE">Germany</option>
+                    <option value="IT">Italy</option>
+                    <option value="ES">Spain</option>
+                    <option value="JP">Japan</option>
+                    <option value="CN">China</option>
+                    <option value="KR">South Korea</option>
+                    <option value="BR">Brazil</option>
+                    <option value="MX">Mexico</option>
+                    <option value="AR">Argentina</option>
+                    <option value="RU">Russia</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="EG">Egypt</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="IN">India</option>
+                    <option value="PK">Pakistan</option>
+                    <option value="BD">Bangladesh</option>
+                    <option value="TH">Thailand</option>
+                    <option value="SG">Singapore</option>
+                    <option value="MY">Malaysia</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="PH">Philippines</option>
+                    <option value="VN">Vietnam</option>
+                    <option value="NZ">New Zealand</option>
+                    <option value="SE">Sweden</option>
+                    <option value="NO">Norway</option>
+                    <option value="DK">Denmark</option>
+                    <option value="FI">Finland</option>
+                    <option value="NL">Netherlands</option>
+                    <option value="BE">Belgium</option>
+                    <option value="CH">Switzerland</option>
+                    <option value="AT">Austria</option>
+                    <option value="PL">Poland</option>
+                    <option value="GR">Greece</option>
+                    <option value="TR">Turkey</option>
+                    <option value="IL">Israel</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="KE">Kenya</option>
+                </select>
+                <p class="info-text">Select a country and search for a city, or get the capital's weather</p>
+            </div>
+
+            <div class="city-input-wrapper">
+                <input type="text" id="cityInput" placeholder="Enter city name (optional)">
+                <button onclick="searchWeather()">Search</button>
+            </div>
+            
+            <button class="capital-btn" onclick="getCapitalWeather()">Get Capital Weather</button>
+            
+            <div id="error-message"></div>
+        </div>
+
+        <div class="weather-card" id="weatherCard">
+            <div id="weather-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'API_KEY';
+        const weatherContent = document.getElementById('weather-content');
+        const weatherCard = document.getElementById('weatherCard');
+        const errorMessage = document.getElementById('error-message');
+        const cityInput = document.getElementById('cityInput');
+        const countrySelect = document.getElementById('countrySelect');
+
+        // Country capitals mapping
+        const countryCapitals = {
+            'US': 'Washington',
+            'GB': 'London',
+            'CA': 'Ottawa',
+            'AU': 'Canberra',
+            'FR': 'Paris',
+            'DE': 'Berlin',
+            'IT': 'Rome',
+            'ES': 'Madrid',
+            'JP': 'Tokyo',
+            'CN': 'Beijing',
+            'KR': 'Seoul',
+            'BR': 'Brasilia',
+            'MX': 'Mexico City',
+            'AR': 'Buenos Aires',
+            'RU': 'Moscow',
+            'ZA': 'Pretoria',
+            'EG': 'Cairo',
+            'SA': 'Riyadh',
+            'AE': 'Abu Dhabi',
+            'IN': 'New Delhi',
+            'PK': 'Islamabad',
+            'BD': 'Dhaka',
+            'TH': 'Bangkok',
+            'SG': 'Singapore',
+            'MY': 'Kuala Lumpur',
+            'ID': 'Jakarta',
+            'PH': 'Manila',
+            'VN': 'Hanoi',
+            'NZ': 'Wellington',
+            'SE': 'Stockholm',
+            'NO': 'Oslo',
+            'DK': 'Copenhagen',
+            'FI': 'Helsinki',
+            'NL': 'Amsterdam',
+            'BE': 'Brussels',
+            'CH': 'Bern',
+            'AT': 'Vienna',
+            'PL': 'Warsaw',
+            'GR': 'Athens',
+            'TR': 'Ankara',
+            'IL': 'Jerusalem',
+            'NG': 'Abuja',
+            'KE': 'Nairobi'
+        };
+
+        cityInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchWeather();
+            }
+        });
+
+        // Update info text when country is selected
+        countrySelect.addEventListener('change', function() {
+            if (this.value) {
+                const capital = countryCapitals[this.value];
+                const countryName = this.options[this.selectedIndex].text;
+                document.querySelector('.info-text').innerHTML = 
+                    `Capital: ${capital} | You can search any city in ${countryName}`;
+            }
+        });
+
+        function displayWeather(data) {
+            const temp = Math.round(data.main.temp - 273.15);
+            const feelsLike = Math.round(data.main.feels_like - 273.15);
+            const timestamp = new Date().toLocaleString('en-IN', { 
+                dateStyle: 'medium', 
+                timeStyle: 'short' 
+            });
+            
+            weatherContent.innerHTML = `
+                <div class="location">${data.name}, ${data.sys.country}</div>
+                <div class="weather-icon">${getWeatherEmoji(data.weather[0].main)}</div>
+                <div class="temperature">${temp}°C</div>
+                <div class="weather-desc">${data.weather[0].description}</div>
+                
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Feels Like</div>
+                        <div class="detail-value">${feelsLike}°C</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Humidity</div>
+                        <div class="detail-value">${data.main.humidity}%</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Wind Speed</div>
+                        <div class="detail-value">${Math.round(data.wind.speed * 3.6)} km/h</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Pressure</div>
+                        <div class="detail-value">${data.main.pressure} hPa</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Visibility</div>
+                        <div class="detail-value">${(data.visibility / 1000).toFixed(1)} km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Cloud Cover</div>
+                        <div class="detail-value">${data.clouds.all}%</div>
+                    </div>
+                </div>
+                <div class="timestamp">Last updated: ${timestamp}</div>
+            `;
+            
+            weatherCard.classList.add('show');
+            errorMessage.innerHTML = '';
+            
+            // Scroll to weather card smoothly
+            weatherCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function getWeatherEmoji(weatherMain) {
+            const weatherEmojis = {
+                'Clear': '☀️',
+                'Clouds': '☁️',
+                'Rain': '🌧️',
+                'Drizzle': '🌦️',
+                'Thunderstorm': '⛈️',
+                'Snow': '❄️',
+                'Mist': '🌫️',
+                'Smoke': '💨',
+                'Haze': '🌫️',
+                'Dust': '🌪️',
+                'Fog': '🌫️',
+                'Sand': '🌪️',
+                'Ash': '🌋',
+                'Squall': '💨',
+                'Tornado': '🌪️'
+            };
+            return weatherEmojis[weatherMain] || '🌤️';
+        }
+
+        function searchWeather() {
+            const country = countrySelect.value;
+            const city = cityInput.value.trim();
+            
+            if (!country) {
+                errorMessage.innerHTML = '<div class="error">⚠️ Please select a country first</div>';
+                return;
+            }
+
+            let searchQuery;
+            let displayName;
+            if (city) {
+                searchQuery = `${city},${country}`;
+                displayName = city;
+            } else {
+                const capital = countryCapitals[country];
+                searchQuery = `${capital},${country}`;
+                displayName = capital;
+            }
+            
+            // Show loading state
+            errorMessage.innerHTML = `<div class="loading" style="color: #f5576c;"><span class="loading-spinner"></span>Searching for ${displayName}...</div>`;
+            
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchQuery}&appid=${API_KEY}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Location not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Weather data:', data);
+                    displayWeather(data);
+                })
+                .catch(error => {
+                    weatherCard.classList.remove('show');
+                    errorMessage.innerHTML = '<div class="error">⚠️ Location not found. Please check your input and try again.</div>';
+                    console.error('Error:', error);
+                });
+        }
+
+        function getCapitalWeather() {
+            const country = countrySelect.value;
+            
+            if (!country) {
+                errorMessage.innerHTML = '<div class="error">⚠️ Please select a country first</div>';
+                return;
+            }
+
+            const capital = countryCapitals[country];
+            const searchQuery = `${capital},${country}`;
+            
+            // Show loading state
+            errorMessage.innerHTML = `<div class="loading" style="color: #f5576c;"><span class="loading-spinner"></span>Loading ${capital} weather...</div>`;
+            
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchQuery}&appid=${API_KEY}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Capital weather not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Weather data:', data);
+                    displayWeather(data);
+                })
+                .catch(error => {
+                    weatherCard.classList.remove('show');
+                    errorMessage.innerHTML = '<div class="error">⚠️ Unable to fetch capital weather. Please try again.</div>';
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+</html>
